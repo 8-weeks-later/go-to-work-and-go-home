@@ -137,7 +137,7 @@ def make_text_message(**kwargs):
     def sky_summary(input_SKY): ## 하늘상태에 대한 멘트
         sky_data=['정보X','맑음','정보X','구름많음','흐림']
         return sky_data[input_SKY]
-    def wind_power_summary(input_WSD): ## 풍속 세기에 대한 멘트
+    def wind_power_summary(input_WSD): ## 풍속 세기에 대한 멘트 
         if input_WSD<4:
             return "바람이 약하다"
         elif 4<=input_WSD<9:

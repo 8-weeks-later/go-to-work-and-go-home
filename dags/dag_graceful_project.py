@@ -12,7 +12,7 @@ with DAG(
     dag_id="dag_graceful_project", ## airflow에들어왔을때 보이는 dag이름
     schedule="50 6,17 * * 1-5", ## 평일 (오전6시, 오후5시)시 50분에 진행
     start_date=pendulum.datetime(2023, 9, 20, tz="Asia/Seoul"), ## 서울로설정
-    catchup=False ## 날짜 누락된 구간은 코드 실행x(start_date부터 어제까지의 구간은 코드실행X)
+    catchup=False ## 날짜 누락된 구간은 코드 실행x(start_date부터 어제까지의 구간은 코드실행X) 
 ) as dag:
     
     
