@@ -5,6 +5,8 @@ import datetime
 from pytz import timezone
 import xml.etree.ElementTree as ET
 import numpy as np
+import re
+
 
 
 def select_now_time_info(**kwargs): ## 파일명에 쓸있도록 날짜, 시간 가져오기
@@ -25,7 +27,7 @@ def get_location_api(api_key,input_nx,input_ny,input_location,**kwargs):
     elif date_info.strftime('%H')=='17': ## 시간대가 오후 5시면 ## 일단 테스트 용으로
         now_hour='1730' ## 오후5시30분에 api에 있는 정보 가져오기 -> 오후6시꺼 가져오기 가능
     else: ## 연습용
-        now_hour='0000'#'1800'
+        now_hour='1600'#'1800'
         
     api_key_decode = requests.utils.unquote(api_key)
 
@@ -44,7 +46,6 @@ def get_location_api(api_key,input_nx,input_ny,input_location,**kwargs):
     weather_json_items=weather_json['response']['body']['items']
     weather_df=pd.DataFrame(weather_json_items['item'])
     weather_df.to_csv('files/{0}_data/{0}_data_{1}.csv'.format(input_location,code_start_time),encoding='utf-8',index=False)
-    
     return weather_df
 
 
@@ -52,7 +53,7 @@ def data_transform_result(**kwargs):
     ## 데이터2개 가져오기
     code_start_time = kwargs['task_instance'].xcom_pull(task_ids='select_now_time_info')
     seoul_data=pd.read_csv('files/seoul_data/seoul_data_{0}.csv'.format(code_start_time))
-    buchon_data=pd.read_csv('files/seoul_data/seoul_data_{0}.csv'.format(code_start_time))
+    buchon_data=pd.read_csv('files/buchon_data/buchon_data_{0}.csv'.format(code_start_time))
     
     date_info=datetime.datetime.now(timezone('Asia/Seoul'))
     
@@ -68,8 +69,8 @@ def data_transform_result(**kwargs):
     else: ## 확인용도로 나중에제거할예정
         # seoul_time=['1800','1900','2000']
         # buchon_time=['1800','1900','2000']
-        seoul_time=['0000','0100','0200']
-        buchon_time=['0000','0100','0200']
+        seoul_time=['1600','1700','1800','1900']
+        buchon_time=['1600','1700','1800','1900']
         # work_or_home='퇴근'
         
     
@@ -115,7 +116,7 @@ def make_text_message(**kwargs):
     result_pivot['낙뢰']=result_pivot['낙뢰'].apply(lambda x : int(x))
     result_pivot['강수형태']=result_pivot['강수형태'].apply(lambda x : int(x))
     result_pivot['습도']=result_pivot['습도'].apply(lambda x : int(x))
-    result_pivot['1시간강수량']=result_pivot['1시간강수량'].apply(lambda x : 0 if x=='강수없음' else int(x))
+    result_pivot['1시간강수량']=result_pivot['1시간강수량'].apply(lambda x : 0 if x=='강수없음' else float(re.sub('(?:mm)','',x)))
     result_pivot['하늘상태']=result_pivot['하늘상태'].apply(lambda x : int(x))
     result_pivot['기온']=result_pivot['기온'].apply(lambda x : int(x))
     result_pivot['동서바람성분']=result_pivot['동서바람성분'].apply(lambda x : float(x))
@@ -159,19 +160,29 @@ def make_text_message(**kwargs):
     mean_rain=round(np.mean(result_pivot['1시간강수량'].values),1)
     max_rain=max(result_pivot['1시간강수량'].values)
     mean_wind=round(np.mean(result_pivot['풍속'].values),1)
-    make_text_message = f'''  ★결론★
-    날씨 {sky_summary(max(result_pivot['하늘상태'].values))}, *{work_or_home} 하는동안 {rain_result}*
-    \n
-    ★날씨 해석★
-    {rain_category_summary(max(result_pivot['강수형태'].values))}
-    {rain_value_summary(mean_rain)}
-    {wind_power_summary(mean_wind)}
-    \n
-    ★수치 정보★
-    평균강수량 : {mean_rain} mm
-    최대강수량 : {max_rain} mm
-    평균기온 : {round(np.mean(result_pivot['기온'].values),1)} ℃
-    평균풍속 : {mean_wind} m/s'''
+    max_wind=max(result_pivot['풍속'].values)
+    make_text_message = f'''
+★결론★
+날씨 {sky_summary(max(result_pivot['하늘상태'].values))}, *{work_or_home} 하는동안 {rain_result}*
+
+★날씨 해석 (최대값 기준)★
+{rain_category_summary(max(result_pivot['강수형태'].values))}
+{rain_value_summary(max_rain)}
+{wind_power_summary(max_wind)}
+
+★수치 정보 요약★
+평균강수량 : {mean_rain} mm
+최대강수량 : {max_rain} mm
+평균기온 : {round(np.mean(result_pivot['기온'].values),1)} ℃
+평균풍속 : {mean_wind} m/s
+
+★수치 상세정보★
+{result_pivot.loc[0]}
+\n
+{result_pivot.loc[1]}
+\n
+{result_pivot.loc[2]} 
+    '''
     return make_text_message
 
 def send_to_slack(**kwargs):
