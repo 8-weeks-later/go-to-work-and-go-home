@@ -124,7 +124,7 @@ def make_text_message(**kwargs):
     result_pivot['풍향']=result_pivot['풍향'].apply(lambda x : float(x))
     result_pivot['풍속']=result_pivot['풍속'].apply(lambda x : float(x))
     def rain_category_summary(input_PTY): ## 강수형태에 대한 멘트
-        rain_data=['비 안옴','비 옴','비 또는 눈','정보X','빗방울 내림','빗방울 또는 눈날림','눈날림']
+        rain_data=['비 안옴','비 옴','비 또는 눈 옴','눈 옴','정보X','빗방울 내림','빗방울 또는 눈날림','눈날림']
         return rain_data[int(input_PTY)]
     def rain_value_summary(input_RN1): ## 1시간 강수량에 대한 멘트
         if input_RN1==0:
