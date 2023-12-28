@@ -3,7 +3,8 @@
 
 https://www.notion.so/1b8ef1f3183a46718d9ab0599e204de1
 
-<img width="1138" alt="image" src="https://github.com/8-weeks-later/go-to-work-and-go-home/assets/61683867/beaea5a0-097a-4bae-a20b-8bccbd26c37c">
+<img width="1141" alt="image" src="https://github.com/8-weeks-later/go-to-work-and-go-home/assets/61683867/db9d5d2c-7009-4e39-a6b0-a29179dec4a7">
+
 
 1. (완료)AWS상에서 진행
 2. (완료)Docker로 Airflow 세팅
