@@ -1,7 +1,7 @@
 venv
 docker-compose.yaml
 logs
-.env
+*.env
 .DS_Store
 plugins/common/__pycache__
 dags/__pycache__

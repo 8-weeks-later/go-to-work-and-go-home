@@ -6,6 +6,7 @@ from common.api_load_location import select_now_time_info,get_location_api,data_
 from airflow.models import Variable
 from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 var_value=Variable.get("gonggong_api_key")
+postgresql_value=Variable.get('postgresql_value_key')
 
 
 with DAG(
@@ -25,6 +26,7 @@ with DAG(
         task_id='get_seoul_api',
         python_callable=get_location_api,
         op_kwargs={'api_key':var_value,
+                   'postgresql_conn':postgresql_value,
                    'input_nx':58,
                    'input_ny':126,
                    'input_location':'seoul'}
@@ -34,6 +36,7 @@ with DAG(
         task_id='get_buchon_api',
         python_callable=get_location_api,
         op_kwargs={'api_key':var_value,
+                   'postgresql_conn':postgresql_value,
                    'input_nx':56,
                    'input_ny':125,
                    'input_location':'buchon'}

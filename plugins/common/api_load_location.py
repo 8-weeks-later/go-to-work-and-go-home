@@ -14,10 +14,10 @@ def select_now_time_info(**kwargs): ## 파일명에 쓸있도록 날짜, 시간 
     return code_start_time
 
 
-def get_location_api(api_key,input_nx,input_ny,input_location,**kwargs):
+def get_location_api(api_key,postgresql_conn,input_nx,input_ny,input_location,**kwargs):
+    
     ## api로 정보 수집
     ## 데이터 저장
-    # code_start_time=datetime.datetime.now(timezone('Asia/Seoul')).strftime('%Y%m%d_%H%M%S') ## 파일명에 사용
     code_start_time = kwargs['task_instance'].xcom_pull(task_ids='select_now_time_info')
     
     date_info=datetime.datetime.now(timezone('Asia/Seoul'))
@@ -27,7 +27,7 @@ def get_location_api(api_key,input_nx,input_ny,input_location,**kwargs):
     elif date_info.strftime('%H')=='17': ## 시간대가 오후 5시면 ## 일단 테스트 용으로
         now_hour='1730' ## 오후5시30분에 api에 있는 정보 가져오기 -> 오후6시꺼 가져오기 가능
     else: ## 연습용
-        now_hour='1600'#'1800'
+        now_hour='1900'#'1800'
         
     api_key_decode = requests.utils.unquote(api_key)
 
@@ -46,6 +46,22 @@ def get_location_api(api_key,input_nx,input_ny,input_location,**kwargs):
     weather_json_items=weather_json['response']['body']['items']
     weather_df=pd.DataFrame(weather_json_items['item'])
     weather_df.to_csv('files/{0}_data/{0}_data_{1}.csv'.format(input_location,code_start_time),encoding='utf-8',index=False)
+    
+    ## postgresql로 데이터 보내기
+    from sqlalchemy import create_engine,text
+    postgres_conn_str=postgresql_conn
+    engine = create_engine(postgres_conn_str)
+    table_exists_query = text("SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = '{0}_data')".format(input_location))
+    table_exists = engine.execute(table_exists_query).scalar()
+
+    # 테이블이 없으면 테이블 생성 후 데이터 추가
+    if not table_exists:
+        weather_df.to_sql('{0}_data'.format(input_location), engine, if_exists='replace', index=False)
+    else:
+        # 테이블이 있으면 데이터 추가
+        weather_df.to_sql('{0}_data'.format(input_location), engine, if_exists='append', index=False)
+
+
     return weather_df
 
 
@@ -69,8 +85,8 @@ def data_transform_result(**kwargs):
     else: ## 확인용도로 나중에제거할예정
         # seoul_time=['1800','1900','2000']
         # buchon_time=['1800','1900','2000']
-        seoul_time=['1600','1700','1800','1900']
-        buchon_time=['1600','1700','1800','1900']
+        seoul_time=['1900','2000','2100','2200']
+        buchon_time=['1900','2000','2100','2200']
         # work_or_home='퇴근'
         
     
@@ -192,3 +208,5 @@ def send_to_slack(**kwargs):
     }
 
     return slack_message
+
+
