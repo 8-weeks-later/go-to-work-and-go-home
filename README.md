@@ -4,6 +4,7 @@
 https://www.notion.so/1b8ef1f3183a46718d9ab0599e204de1
 
 <img width="1146" alt="image" src="https://github.com/8-weeks-later/go-to-work-and-go-home/assets/61683867/863ca886-8f2a-4a3c-8e4e-af3a60169a49">
+<img width="1434" alt="image" src="https://github.com/8-weeks-later/go-to-work-and-go-home/assets/61683867/fe64eaf2-eef6-4481-a051-f70e5ad0e1a1">
 
 
 
